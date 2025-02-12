@@ -5,4 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "numpy",
+    "sympy",
 ]
+
+[dependency-groups]
+dev = [
+    "python-linear-algebra",
+]
+
+[tool.uv.sources]
+python-linear-algebra = { workspace = true }
