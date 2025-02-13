@@ -194,3 +194,7 @@ def skriv_ut_numpy_egenvektorer_og_multiplikasjon_med_matrise(A, presisjon=3):
         print('A @ evenvektor:', complex_to_string(np.array(A @ v, dtype='complex128').ravel(), precision=presisjon))
         print()
 
+def invers_matrise(A):
+    assert A.shape[0] == A.shape[1], "matrisen A skal være kvadratisk"
+    B = gauss_jordan(np.hstack([A, np.eye(A.shape[0])]))
+    return B[:, A.shape[1]:]
