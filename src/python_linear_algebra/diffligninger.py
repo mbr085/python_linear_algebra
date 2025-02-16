@@ -18,9 +18,9 @@ def løs_inhomogent_system_av_differensialligninger(overgangsmatrise, starttilst
     påtrykk = np.array(påtrykk).ravel()
     starttilstand = np.array(starttilstand).ravel()
     ligevektsløsning = partikulaer_losning(overgangsmatrise, påtrykk).ravel()
-    starttilstand = starttilstand - ligevektsløsning
 
-    return løs_homogent_system_av_differensialligninger(overgangsmatrise, starttilstand, tverdier) + ligevektsløsning[:, None]
+    return løs_homogent_system_av_differensialligninger(
+            overgangsmatrise, starttilstand - ligevektsløsning, tverdier) + ligevektsløsning[:, None]
 
 def løs_homogent_system_av_differensialligninger(overgangsmatrise, starttilstand, tverdier):
     '''
