@@ -142,7 +142,7 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None):
     assert np.allclose(koeffisientmatrise @ løsning[None, :], høyreside), "Det finnes ingen løsning til det lineære ligningssystemet"
     return løsning
 
-def finn_egenvektorer_og_egenverdier(A):
+def finn_egenvektorer_og_egenverdier(A, epsilon=1e-12):
     assert A.shape[0] == A.shape[1], "matrisen A skal være kvadratisk"
 
     t = sp.symbols('t')  # Definerer symbolet t, som brukes i det karakteristiske polynomet
@@ -156,9 +156,11 @@ def finn_egenvektorer_og_egenverdier(A):
     # for ev in sorted(egenverdier, key=lambda x: -np.abs(x)):
     for ev in egenverdier:
         ev = complex(ev)
-        if ev.real == ev or np.iscomplexobj(A):
-            if ev.real == ev:
-                ev = ev.real
+        if np.abs(ev.real) < epsilon:
+            ev = ev.imag * 0j
+        if np.abs(ev.imag) < epsilon:
+            ev = ev.real
+        if np.isrealobj(ev) or np.iscomplexobj(A):
             egenvektorer = null_rom((A - ev * np.eye(A.shape[0])))
             res.append((ev, len(egenvektorer), egenvektorer))
     
