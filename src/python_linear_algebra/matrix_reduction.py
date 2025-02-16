@@ -157,7 +157,7 @@ def finn_egenvektorer_og_egenverdier(A, epsilon=1e-12):
     for ev in egenverdier:
         ev = complex(ev)
         if np.abs(ev.real) < epsilon:
-            ev = ev.imag * 0j
+            ev = ev.imag * 1j
         if np.abs(ev.imag) < epsilon:
             ev = ev.real
         if np.isrealobj(ev) or np.iscomplexobj(A):
