@@ -14,6 +14,12 @@ def løs_homogent_system_av_differensialligninger(overgangsmatrise, starttilstan
     Retunerer:
         y (np.ndarray): Verdiene av løsningen til sistemet i de angitte tverdier
     '''
+    starttilstand = np.array(starttilstand).ravel()
+    tverdier = np.array(tverdier).ravel()
+    assert overgangsmatrise.shape[0] == overgangsmatrise.shape[1], "overgangsmatrise må være kvadratisk"
+    assert overgangsmatrise.shape[0] == starttilstand.shape[0], "overgangsmatrise og starttilstand må ha samme dimensjon"
+    assert len(tverdier) > 0, "tverdier må ha minst en verdi"
+
     egenvektorer_og_egenverdier = finn_egenvektorer_og_egenverdier(overgangsmatrise)
     egenverdier = np.array([[x[0]] for x in egenvektorer_og_egenverdier])
     P = np.hstack([x[2][0] for x in egenvektorer_og_egenverdier])
