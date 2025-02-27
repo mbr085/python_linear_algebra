@@ -133,7 +133,7 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None):
     
     utvidet_matrise = gauss_jordan(np.hstack([koeffisientmatrise, høyreside]))
     radindekser, kolonneindekser = pivot_posisjoner(utvidet_matrise[:, :-1])
-    løsning = np.zeros((koeffisientmatrise.shape[1], 1))
+    løsning = np.zeros((koeffisientmatrise.shape[1], 1), dtype=koeffisientmatrise.dtype)
     redusert_høyreside = utvidet_matrise[:, -1]
     
     for rad, kolonne in zip(radindekser, kolonneindekser):
