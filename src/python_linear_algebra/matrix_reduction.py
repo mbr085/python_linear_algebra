@@ -132,14 +132,9 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None):
         høyreside = høyreside[:, None]
     
     utvidet_matrise = gauss_jordan(np.hstack([koeffisientmatrise, høyreside]))
-    radindekser, kolonneindekser = pivot_posisjoner(utvidet_matrise[:, :-1])
-    løsning = np.zeros((koeffisientmatrise.shape[1], 1), dtype=koeffisientmatrise.dtype)
-    redusert_høyreside = utvidet_matrise[:, -1]
-    
-    for rad, kolonne in zip(radindekser, kolonneindekser):
-        løsning[kolonne] = redusert_høyreside[rad]
+    løsning = utvidet_matrise[:, [-1]]
 
-    assert np.allclose(koeffisientmatrise @ løsning[None, :], høyreside), "Det finnes ingen løsning til det lineære ligningssystemet"
+    assert np.allclose(koeffisientmatrise @ løsning, høyreside), "Det finnes ingen løsning til det lineære ligningssystemet"
     return løsning
 
 def finn_egenvektorer_og_egenverdier(A, epsilon=1e-12):
