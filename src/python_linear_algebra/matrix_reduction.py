@@ -53,9 +53,10 @@ def gauss_jordan(matrise, epsilon=1e-8):
     ikke_null_kolonner = np.any(matrise != 0, axis=0)
     
     # Finn indeksen til den første kolonnen med ikke-null elementer
-    forste_ikke_null_kolonne = np.argmax(np.abs(ikke_null_kolonner))
+    forste_ikke_null_kolonne_index = np.argmax(np.abs(ikke_null_kolonner))
+    forste_ikke_null_kolonne = matrise[:, forste_ikke_null_kolonne_index]
     # Finn indeksen til raden med største verdi i den valgte kolonnen (pivot rad)
-    pivot_rad_indeks = np.argmax(matrise[:, forste_ikke_null_kolonne])
+    pivot_rad_indeks = np.argmax(forste_ikke_null_kolonne)
     
     # Normaliser pivot-raden
     pivot_rad = normer_forste_element(matrise[pivot_rad_indeks])
@@ -64,23 +65,25 @@ def gauss_jordan(matrise, epsilon=1e-8):
     matrise[pivot_rad_indeks] = matrise[0]
     matrise[0] = pivot_rad
     # Utfør eliminering for å gjøre alle elementene under pivoten null
-    if matrise[0, forste_ikke_null_kolonne] > epsilon:
-        matrise[1:] -= (matrise[1:, 0] / matrise[0, forste_ikke_null_kolonne])[:, None] * matrise[0]
+    if matrise[0, forste_ikke_null_kolonne_index] > epsilon:
+        matrise[1:] -= (matrise[1:, 0] / matrise[0, forste_ikke_null_kolonne_index])[:, None] * matrise[0]
 
     # Kall Gauss-Jordan rekursivt på den nedre delmatrisen
-    matrise[1:, 1:] = gauss_jordan(matrise[1:, 1:])
+
+    matrise[1:, forste_ikke_null_kolonne_index:] = gauss_jordan(matrise[1:, forste_ikke_null_kolonne_index:])
     
     # Gjør den første raden null over pivot-posisjonene til de øvrige radene.
     for rad in matrise[1:]:
         if np.any(rad != 0):  # Hvis raden ikke er null
             # Finn indeksen til det første ikke-null elementet i raden
-            forste_ikke_null_kolonne = np.argmax(rad != 0)
+            forste_ikke_null_kolonne_index = np.argmax(rad != 0)
             
             # Trekk fra et multiplum av denne raden for å gjøre elementet over pivot null
-            matrise[0] -= (matrise[0, forste_ikke_null_kolonne] / rad[forste_ikke_null_kolonne]) * rad
+            matrise[0] -= (matrise[0, forste_ikke_null_kolonne_index] / rad[forste_ikke_null_kolonne_index]) * rad
     
     # Returner den resulterende matrisen
     return matrise
+
 
 def pivot_posisjoner(matrise):
     """
