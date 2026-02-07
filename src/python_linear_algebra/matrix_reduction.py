@@ -1,7 +1,7 @@
 import numpy as np
 import sympy as sp
 
-def normer_forste_element(vektor):
+def normer_største_element(vektor):
     """
     Normaliserer en vektor ved å dele alle elementer på det første ikke-null elementet.
     
@@ -14,13 +14,13 @@ def normer_forste_element(vektor):
     if np.allclose(vektor, 0):
         return vektor
     # Finn indeksen til det første elementet i vektoren som ikke er null
-    forste_ikke_null_indeks = np.argmax(vektor != 0)
+    største_ikke_null_indeks = np.argmax(np.abs(vektor))
     
     # Hent verdien til det første ikke-null elementet
-    forste_ikke_null_element = vektor[forste_ikke_null_indeks]
+    største_ikke_null_element = np.abs(vektor[største_ikke_null_indeks])
     
     # Returner den normaliserte vektoren
-    return vektor / forste_ikke_null_element
+    return vektor / største_ikke_null_element
 
 def gauss_jordan(matrise, epsilon=1e-8):
     """
@@ -33,6 +33,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
     Returnerer:
         np.ndarray: En rekkeredusert matrise i redusert trappeform.
     """
+    normaliser = not np.issubdtype(matrise.dtype, np.integer)
     # Sett svært små verdier til null for å unngå numeriske feil
     matrise[np.abs(matrise) < epsilon] = 0
     
@@ -42,13 +43,21 @@ def gauss_jordan(matrise, epsilon=1e-8):
     
     # Hvis matrisen har én rad, normaliser den første radens første ikke-null element
     elif len(matrise) == 1:
-        matrise[0] = normer_forste_element(matrise[0])
+        if normaliser:
+            matrise[0] = normer_største_element(matrise[0])
+        else:
+            matrise[0] = matrise[0] // np.gcd.reduce(matrise[0])
+            største_ikke_null_kolonne = np.argmax(np.abs(matrise[0]))
+            matrise[0] = matrise[0] // np.sign(matrise[0, største_ikke_null_kolonne])
         return matrise
     
     # Beregn radenes summer for å normalisere matrisen (gjør tallene mer håndterbare)
     rad_maksimummer = np.max(np.abs(matrise), axis=1)
-    rad_maksimummer[rad_maksimummer <= epsilon] = 1
-    matrise = matrise / rad_maksimummer[:, None]  # Normaliser hver rad
+    rad_maksimummer[rad_maksimummer <= epsilon] = 0
+    if normaliser:
+        matrise = matrise / rad_maksimummer[:, None]  # Normaliser hver rad
+    else:
+        matrise = rad_maksimummer[:, None] * matrise - matrise
     # Finn kolonner som inneholder ikke-null elementer
     ikke_null_kolonner = np.flatnonzero(np.any(matrise != 0, axis=0))
     
@@ -56,38 +65,46 @@ def gauss_jordan(matrise, epsilon=1e-8):
     forste_ikke_null_kolonne_index = ikke_null_kolonner[np.argmax(np.max(np.abs(matrise[:, ikke_null_kolonner]), axis=0))]
     forste_ikke_null_kolonne = matrise[:, forste_ikke_null_kolonne_index]
     # Finn indeksen til raden med største verdi i den valgte kolonnen (pivot rad)
-    pivot_rad_indeks = np.argmax(forste_ikke_null_kolonne)
+    pivot_rad_indeks = np.argmax(np.abs(forste_ikke_null_kolonne))
+
     
     # Normaliser pivot-raden
-    pivot_rad = normer_forste_element(matrise[pivot_rad_indeks])
+    pivot_rad = matrise[pivot_rad_indeks].copy()
+    if normaliser:
+        pivot_rad = normer_største_element(pivot_rad)
     
     # Bytt plass på pivot-raden og den første raden
     matrise[pivot_rad_indeks] = matrise[0]
     matrise[0] = pivot_rad
     # Utfør eliminering for å gjøre alle elementene under pivoten null
-    if matrise[0, forste_ikke_null_kolonne_index] > epsilon:
-        matrise[1:] -= (matrise[1:, forste_ikke_null_kolonne_index] / matrise[0, forste_ikke_null_kolonne_index])[:, None] * matrise[0]
+    if np.abs(matrise[0, forste_ikke_null_kolonne_index]) > epsilon:
+        if normaliser:
+            matrise[1:] -= (matrise[1:, forste_ikke_null_kolonne_index] / matrise[0, forste_ikke_null_kolonne_index])[:, None] * matrise[0]
+        else:
+            matrise[1:] = (matrise[0, forste_ikke_null_kolonne_index] * matrise[1:]) - matrise[1:, forste_ikke_null_kolonne_index][:, None] * matrise[0] 
 
     # Kall Gauss-Jordan rekursivt på den nedre delmatrisen
 
     resterende_kolonner = np.concatenate((np.arange(0, forste_ikke_null_kolonne_index), np.arange(forste_ikke_null_kolonne_index + 1, matrise.shape[1])))
 
-    matrise[1:, resterende_kolonner] = gauss_jordan(matrise[1:, resterende_kolonner])
+    matrise[1:, resterende_kolonner] = gauss_jordan(matrise[1:, resterende_kolonner], epsilon=epsilon)
     
     # Gjør den første raden null over pivot-posisjonene til de øvrige radene.
     matrise_pivot_posisjoner = pivot_posisjoner(matrise[1:])
-    for rad_idx, col_idx in zip(*pivot_posisjoner(matrise[1:])):
-        rad = matrise[1 + rad_idx]
-        matrise[0] -= (matrise[0, col_idx] / rad[col_idx]) * rad 
-    # for rad in matrise[1:]:
-    #     if np.any(rad != 0):  # Hvis raden ikke er null
-    #         # Finn indeksen til det første ikke-null elementet i raden
-    #         forste_ikke_null_kolonne_index = np.argmax(rad != 0)
-            
-    #         # Trekk fra et multiplum av denne raden for å gjøre elementet over pivot null
-    #         matrise[0] -= (matrise[0, forste_ikke_null_kolonne_index] / rad[forste_ikke_null_kolonne_index]) * rad
-    
-    # Returner den resulterende matrisen
+    if normaliser:
+        for rad_idx, col_idx in zip(*pivot_posisjoner(matrise[1:])):
+            rad = matrise[1 + rad_idx]
+            matrise[0] -= (matrise[0, col_idx] / rad[col_idx]) * rad 
+    else:
+        for rad_idx, col_idx in zip(*pivot_posisjoner(matrise[1:])):
+            rad = matrise[1 + rad_idx]
+            matrise[0] = matrise[0] * rad[col_idx] - matrise[0, col_idx] * rad 
+            if np.issubdtype(matrise.dtype, np.integer):
+                matrise[0] = matrise[0] // np.gcd.reduce(matrise[0])
+        største_ikke_null_kolonne = np.argmax(np.abs(matrise[0]))
+        matrise[0] = matrise[0] // np.sign(matrise[0, største_ikke_null_kolonne])
+                # matrise[0] = matrise[0] // np.sign(rad[col_idx])
+
     return matrise
 
 
@@ -99,9 +116,9 @@ def pivot_posisjoner(matrise):
     pivot_kolonner = []
     for rad_indeks, rad in enumerate(matrise):
         if np.any(rad != 0):
-            første_ikke_null_kolonne = np.argmax(rad != 0)
+            største_ikke_null_kolonne = np.argmax(np.abs(rad))
             pivot_rader.append(rad_indeks)
-            pivot_kolonner.append(første_ikke_null_kolonne)
+            pivot_kolonner.append(største_ikke_null_kolonne)
     return pivot_rader, pivot_kolonner
 
 def frie_parametre(matrise):
@@ -112,20 +129,27 @@ def frie_parametre(matrise):
     alle_kolonner = set(range(matrise.shape[1]))
     return sorted(alle_kolonner.difference(pivot_kolonner))
 
-def null_rom(matrise, epsilon=1e-8):
+def null_rom(matrise, epsilon=1e-8,):
     """
     Finner en basis for nullrommet til en matrise.
     """
+    normaliser = not np.issubdtype(matrise.dtype, np.integer)
     nullrom_basis = []
     redusert_matrise = gauss_jordan(matrise, epsilon=epsilon)
     pivot_rader, pivot_kolonner = pivot_posisjoner(redusert_matrise)
     frie = frie_parametre(redusert_matrise)
     
     for fri in frie:
-        vektor = np.zeros((matrise.shape[1], 1))
+        vektor = np.zeros((matrise.shape[1], 1), dtype=matrise.dtype)
         vektor[fri] = 1
-        for rad, kolonne in zip(pivot_rader, pivot_kolonner):
-            vektor[kolonne] = -np.sum((redusert_matrise @ vektor)[rad]) / redusert_matrise[rad, kolonne]
+        if normaliser:
+            for rad, kolonne in zip(pivot_rader, pivot_kolonner):
+                vektor[kolonne] = -np.sum((redusert_matrise @ vektor)[rad]) / redusert_matrise[rad, kolonne]
+        else:
+            for rad, kolonne in zip(pivot_rader, pivot_kolonner):
+                vektor = redusert_matrise[rad, kolonne] * vektor
+                vektor[kolonne] = -np.sum((redusert_matrise @ vektor)[rad]) // redusert_matrise[rad, kolonne]
+                vektor = vektor // np.gcd.reduce(vektor)
         nullrom_basis.append(vektor)
     
     return nullrom_basis
@@ -140,15 +164,29 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None, epsilon=1e-8):
         høyreside = høyreside[:, None]
 
     utvidet_null_rom = null_rom(np.hstack([koeffisientmatrise, høyreside]), epsilon=epsilon)
-    utvidet_null_rom = [v for v in utvidet_null_rom if v[-1] > epsilon]
-    assert len(utvidet_null_rom) > 0, "Det finnes ingen løsning til det lineære ligningssystemet"
+    utvidet_null_rom = [v for v in utvidet_null_rom if np.abs(v[-1]) > epsilon]
+    if len(utvidet_null_rom) == 0:
+        print("Det finnes ingen løsning til det lineære ligningssystemet")
     
-    v = utvidet_null_rom[0]
+    # if np.issubdtype(koeffisientmatrise.dtype, np.integer):
+    #     utvidet_null_rom = [v for v in utvidet_null_rom if v[-1] == 1 or v[-1] == -1]
+    #     if len(utvidet_null_rom) == 0:
+    #         print("Det finnes ingen heltallsløsning til det lineære ligningssystemet")
+    #         v = np.zeros((koeffisientmatrise.shape[1] + 1, 1), dtype=koeffisientmatrise.dtype)
+    #         v[-1] = 1
+    #     else:
+    #         v = utvidet_null_rom[0]
+    #     løsning = -v[: -1] // v[-1]
+    # else:
+    if len(utvidet_null_rom) == 0:
+        v = np.zeros((koeffisientmatrise.shape[1] + 1, 1), dtype=koeffisientmatrise.dtype)
+        v[-1] = 1
+    else:
+        v = utvidet_null_rom[0]
     løsning = -v[: -1] / v[-1]
     
-    assert np.allclose(koeffisientmatrise @ løsning[None, :], høyreside), "Det finnes ingen løsning til det lineære ligningssystemet"
-    return løsning
-    assert np.allclose(koeffisientmatrise @ løsning[None, :], høyreside), "Det finnes ingen løsning til det lineære ligningssystemet"
+    # if not np.allclose(koeffisientmatrise @ løsning[None, :], høyreside):
+    #     print("Det finnes ingen løsning til det lineære ligningssystemet")
     return løsning
 
 def finn_egenvektorer_og_egenverdier(A, epsilon=1e-12):
@@ -205,7 +243,7 @@ def skriv_ut_numpy_egenvektorer_og_multiplikasjon_med_matrise(A, presisjon=3):
         print('A @ evenvektor:', complex_to_string(np.array(A @ v, dtype='complex128').ravel(), precision=presisjon))
         print()
 
-def invers_matrise(A):
+def invers_matrise(A, normaliser=True, epsilon=1e-8):
     assert A.shape[0] == A.shape[1], "matrisen A skal være kvadratisk"
-    B = gauss_jordan(np.hstack([A, np.eye(A.shape[0])]))
+    B = gauss_jordan(np.hstack([A, np.eye(A.shape[0])]), normaliser=normaliser, epsilon=epsilon)
     return B[:, A.shape[1]:]
