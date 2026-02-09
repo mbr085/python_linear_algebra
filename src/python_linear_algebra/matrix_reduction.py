@@ -103,7 +103,10 @@ def gauss_jordan(matrise, epsilon=1e-8):
                 matrise[0] = matrise[0] // np.gcd.reduce(matrise[0])
         største_ikke_null_kolonne = np.argmax(np.abs(matrise[0]))
         matrise[0] = matrise[0] // np.sign(matrise[0, største_ikke_null_kolonne])
-                # matrise[0] = matrise[0] // np.sign(rad[col_idx])
+
+    # Bytt rader slik at raden med ikke-null element lengst til venstre kommer først
+    mask = np.any(matrise != 0, axis=1)
+    matrise[mask] = [matrise[mask][np.argmax(matrise[mask], axis=1)]]
 
     return matrise
 
