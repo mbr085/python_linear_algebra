@@ -107,7 +107,8 @@ def gauss_jordan(matrise, epsilon=1e-8):
     # Bytt rader slik at raden med ikke-null element lengst til venstre kommer først
     mask = np.any(matrise != 0, axis=1)
     maskert_matrise = matrise[mask]
-    matrise[mask] = [maskert_matrise[:, np.argmax(maskert_matrise, axis=0)]]
+    matrise[mask] = maskert_matrise[np.argsort(np.argmax(maskert_matrise, axis=1))]
+    # matrise[mask] = [maskert_matrise[np.argmax(maskert_matrise, axis=1)]]
 
     return matrise
 
@@ -123,7 +124,7 @@ def pivot_posisjoner(matrise):
             største_ikke_null_kolonne = np.argmax(np.abs(rad))
             pivot_rader.append(rad_indeks)
             pivot_kolonner.append(største_ikke_null_kolonne)
-    return pivot_rader, pivot_kolonner
+    return pivot_rader[::-1], pivot_kolonner[::-1]
 
 def frie_parametre(matrise):
     """
