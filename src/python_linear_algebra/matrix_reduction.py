@@ -109,10 +109,12 @@ def gauss_jordan(matrise, epsilon=1e-8):
         matrise[0] = matrise[0] // np.sign(matrise[0, største_ikke_null_kolonne])
 
     # Bytt rader slik at raden med ikke-null element lengst til venstre kommer først
-    mask = np.any(matrise != 0, axis=1)
-    maskert_matrise = matrise[mask]
-    matrise[mask] = maskert_matrise[np.argsort(np.argmax(maskert_matrise, axis=1))]
+    # mask = np.any(matrise != 0, axis=1)
+    # maskert_matrise = matrise[mask]
+    # matrise[mask] = maskert_matrise[np.argsort(np.argmax(maskert_matrise, axis=1))]
     # matrise[mask] = [maskert_matrise[np.argmax(maskert_matrise, axis=1)]]
+    pivor_rader = pivot_posisjoner(matrise)[0]
+    matrise[np.sort(pivor_rader)] = matrise[pivor_rader]
 
     return matrise
 
@@ -123,12 +125,12 @@ def pivot_posisjoner(matrise):
     """
     pivot_rader = []
     pivot_kolonner = []
-    for rad_indeks, rad in enumerate(matrise):
-        if np.any(rad != 0):
-            største_ikke_null_kolonne = np.argmax(np.abs(rad))
-            pivot_rader.append(rad_indeks)
-            pivot_kolonner.append(største_ikke_null_kolonne)
-    return pivot_rader[::-1], pivot_kolonner[::-1]
+    for kolonne_index, kolonne in enumerate(matrise.T):
+        rader = np.flatnonzero(kolonne)
+        if len(rader) == 1:
+            pivot_kolonner.append(kolonne_index)
+            pivot_rader.append(rader[0])
+    return pivot_rader, pivot_kolonner
 
 def frie_parametre(matrise):
     """
