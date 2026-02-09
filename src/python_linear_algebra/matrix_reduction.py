@@ -106,7 +106,8 @@ def gauss_jordan(matrise, epsilon=1e-8):
 
     # Bytt rader slik at raden med ikke-null element lengst til venstre kommer først
     mask = np.any(matrise != 0, axis=1)
-    matrise[mask] = [matrise[mask][np.argmax(matrise[mask], axis=1)]]
+    maskert_matrise = matrise[mask]
+    matrise[mask] = [maskert_matrise[:, np.argmax(maskert_matrise, axis=0)]]
 
     return matrise
 
