@@ -72,6 +72,10 @@ def gauss_jordan(matrise, epsilon=1e-8):
     pivot_rad = matrise[pivot_rad_indeks].copy()
     if normaliser:
         pivot_rad = normer_største_element(pivot_rad)
+    else:
+        pivot_rad = pivot_rad // np.gcd.reduce(pivot_rad)
+        største_ikke_null_kolonne = np.argmax(np.abs(pivot_rad))
+        pivot_rad = pivot_rad // np.sign(matrise[0, største_ikke_null_kolonne])
     
     # Bytt plass på pivot-raden og den første raden
     matrise[pivot_rad_indeks] = matrise[0]
