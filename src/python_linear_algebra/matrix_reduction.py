@@ -113,8 +113,8 @@ def gauss_jordan(matrise, epsilon=1e-8):
     # maskert_matrise = matrise[mask]
     # matrise[mask] = maskert_matrise[np.argsort(np.argmax(maskert_matrise, axis=1))]
     # matrise[mask] = [maskert_matrise[np.argmax(maskert_matrise, axis=1)]]
-    pivor_rader = pivot_posisjoner(matrise)[0]
-    matrise[np.sort(pivor_rader)] = matrise[pivor_rader]
+    # pivor_rader = pivot_posisjoner(matrise)[0]
+    # matrise[np.sort(pivor_rader)] = matrise[pivor_rader]
 
     return matrise
 
@@ -123,22 +123,27 @@ def pivot_posisjoner(matrise):
     """
     Finner pivotposisjonene i en rekkeredusert matrise.
     """
+    pivot_rad_set = set()
     pivot_rader = []
     pivot_kolonner = []
     for kolonne_index, kolonne in enumerate(matrise.T):
         rader = np.flatnonzero(kolonne)
         if len(rader) == 1:
-            pivot_kolonner.append(kolonne_index)
-            pivot_rader.append(rader[0])
+            rad = rader[0]
+            if rad not in pivot_rad_set:
+                pivot_rad_set.add(rad)
+                pivot_kolonner.append(kolonne_index)
+                pivot_rader.append(rader[0])
     return pivot_rader, pivot_kolonner
 
-def frie_parametre(matrise):
-    """
-    Finner bundne og frie parametere i en rekkeredusert matrise.
-    """
-    _, pivot_kolonner = pivot_posisjoner(matrise)
-    alle_kolonner = set(range(matrise.shape[1]))
-    return sorted(alle_kolonner.difference(pivot_kolonner))
+# def frie_parametre(matrise):
+#     """
+#     Finner bundne og frie parametere i en rekkeredusert matrise.
+#     """
+#     return np.flatnonzero(np.sum(matrise != 0, axis=0) != 1)
+#     # _, pivot_kolonner = pivot_posisjoner(matrise)
+#     # alle_kolonner = set(range(matrise.shape[1]))
+#     # return sorted(alle_kolonner.difference(pivot_kolonner))
 
 def null_rom(matrise, epsilon=1e-8,):
     """
@@ -148,7 +153,8 @@ def null_rom(matrise, epsilon=1e-8,):
     nullrom_basis = []
     redusert_matrise = gauss_jordan(matrise, epsilon=epsilon)
     pivot_rader, pivot_kolonner = pivot_posisjoner(redusert_matrise)
-    frie = frie_parametre(redusert_matrise)
+    frie = np.setdiff1d(np.arange(redusert_matrise.shape[1]), pivot_kolonner)
+    # frie = frie_parametre(redusert_matrise)
     
     for fri in frie:
         vektor = np.zeros((matrise.shape[1], 1), dtype=matrise.dtype)
