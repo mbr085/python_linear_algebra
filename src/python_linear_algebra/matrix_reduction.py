@@ -18,7 +18,7 @@ def normer_største_element(vektor):
     største_ikke_null_indeks = np.argmax(np.abs(vektor))
     
     # Hent verdien til det første ikke-null elementet
-    største_ikke_null_element = np.abs(vektor[største_ikke_null_indeks])
+    største_ikke_null_element = vektor[største_ikke_null_indeks]
     
     # Returner den normaliserte vektoren
     return vektor / største_ikke_null_element
@@ -56,7 +56,8 @@ def gauss_jordan(matrise, epsilon=1e-8):
     rad_maksimummer = np.max(np.abs(matrise), axis=1)
     rad_maksimummer[rad_maksimummer <= epsilon] = 0
     if normaliser:
-        matrise = matrise / rad_maksimummer[:, None]  # Normaliser hver rad
+        mask = rad_maksimummer > 0
+        matrise[mask] = matrise[mask] / rad_maksimummer[mask][:, None]  # Normaliser hver rad
     # else:
     #     matrise = rad_maksimummer[:, None] * matrise - matrise
     # Finn kolonner som inneholder ikke-null elementer
