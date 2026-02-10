@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sp
+import warnings
 
 def normer_største_element(vektor):
     """
@@ -183,7 +184,8 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None, epsilon=1e-8):
     utvidet_null_rom = null_rom(np.hstack([koeffisientmatrise, høyreside]), epsilon=epsilon)
     utvidet_null_rom = [v for v in utvidet_null_rom if np.abs(v[-1]) > epsilon]
     if len(utvidet_null_rom) == 0:
-        print("Det finnes ingen løsning til det lineære ligningssystemet")
+        warnings.warn("Det finnes ingen løsning til det lineære ligningssystemet", UserWarning)
+        # print("Det finnes ingen løsning til det lineære ligningssystemet")
     
     # if np.issubdtype(koeffisientmatrise.dtype, np.integer):
     #     utvidet_null_rom = [v for v in utvidet_null_rom if v[-1] == 1 or v[-1] == -1]
