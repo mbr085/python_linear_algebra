@@ -57,8 +57,8 @@ def gauss_jordan(matrise, epsilon=1e-8):
     rad_maksimummer[rad_maksimummer <= epsilon] = 0
     if normaliser:
         matrise = matrise / rad_maksimummer[:, None]  # Normaliser hver rad
-    else:
-        matrise = rad_maksimummer[:, None] * matrise - matrise
+    # else:
+    #     matrise = rad_maksimummer[:, None] * matrise - matrise
     # Finn kolonner som inneholder ikke-null elementer
     ikke_null_kolonner = np.flatnonzero(np.any(matrise != 0, axis=0))
     
@@ -76,7 +76,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
     else:
         pivot_rad = pivot_rad // np.gcd.reduce(pivot_rad)
         største_ikke_null_kolonne = np.argmax(np.abs(pivot_rad))
-        pivot_rad = pivot_rad // np.sign(matrise[0, største_ikke_null_kolonne])
+        pivot_rad = pivot_rad // np.sign(pivot_rad[største_ikke_null_kolonne])
     
     # Bytt plass på pivot-raden og den første raden
     matrise[pivot_rad_indeks] = matrise[0]
@@ -110,12 +110,9 @@ def gauss_jordan(matrise, epsilon=1e-8):
         matrise[0] = matrise[0] // np.sign(matrise[0, største_ikke_null_kolonne])
 
     # Bytt rader slik at raden med ikke-null element lengst til venstre kommer først
-    # mask = np.any(matrise != 0, axis=1)
-    # maskert_matrise = matrise[mask]
-    # matrise[mask] = maskert_matrise[np.argsort(np.argmax(maskert_matrise, axis=1))]
-    # matrise[mask] = [maskert_matrise[np.argmax(maskert_matrise, axis=1)]]
-    # pivor_rader = pivot_posisjoner(matrise)[0]
-    # matrise[np.sort(pivor_rader)] = matrise[pivor_rader]
+    mask = np.any(matrise != 0, axis=1)
+    pivot_rader = pivot_posisjoner(matrise)[0]
+    matrise[mask] = matrise[pivot_rader]
 
     return matrise
 
@@ -262,7 +259,14 @@ def skriv_ut_numpy_egenvektorer_og_multiplikasjon_med_matrise(A, presisjon=3):
         print('A @ evenvektor:', complex_to_string(np.array(A @ v, dtype='complex128').ravel(), precision=presisjon))
         print()
 
-def invers_matrise(A, normaliser=True, epsilon=1e-8):
+def invers_matrise(A, epsilon=1e-8):
     assert A.shape[0] == A.shape[1], "matrisen A skal være kvadratisk"
-    B = gauss_jordan(np.hstack([A, np.eye(A.shape[0])]), normaliser=normaliser, epsilon=epsilon)
+    B = gauss_jordan(np.hstack([A, np.eye(A.shape[0], dtype=A.dtype)]), epsilon=epsilon)
+    if np.issubdtype(A.dtype, np.integer):
+        # B[:, A.shape[1]:] = B[:, A.shape[1]:] // np.gcd.reduce(B[:, A.shape[1]:])
+        if np.max(np.abs(B[:, :A.shape[1]])) > 1:
+            warnings.warn("Matrisen A har ikke en heltallig invers.", UserWarning)
+            B = B.astype(float) / np.diag(B[:, :A.shape[1]])[:, None]
+    if not np.allclose(A @ B[:, A.shape[1]:], np.eye(A.shape[0])):
+        warnings.warn("Matrisen A er ikke invertibel.", UserWarning)
     return B[:, A.shape[1]:]
