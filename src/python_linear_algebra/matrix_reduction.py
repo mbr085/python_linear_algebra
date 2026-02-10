@@ -183,27 +183,8 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None, epsilon=1e-8):
     utvidet_null_rom = [v for v in utvidet_null_rom if np.abs(v[-1]) > epsilon]
     if len(utvidet_null_rom) == 0:
         warnings.warn("Det finnes ingen løsning til det lineære ligningssystemet", UserWarning)
-        # print("Det finnes ingen løsning til det lineære ligningssystemet")
-    
-    # if np.issubdtype(koeffisientmatrise.dtype, np.integer):
-    #     utvidet_null_rom = [v for v in utvidet_null_rom if v[-1] == 1 or v[-1] == -1]
-    #     if len(utvidet_null_rom) == 0:
-    #         print("Det finnes ingen heltallsløsning til det lineære ligningssystemet")
-    #         v = np.zeros((koeffisientmatrise.shape[1] + 1, 1), dtype=koeffisientmatrise.dtype)
-    #         v[-1] = 1
-    #     else:
-    #         v = utvidet_null_rom[0]
-    #     løsning = -v[: -1] // v[-1]
-    # else:
-    if len(utvidet_null_rom) == 0:
-        v = np.zeros((koeffisientmatrise.shape[1] + 1, 1), dtype=koeffisientmatrise.dtype)
-        v[-1] = 1
-    else:
-        v = utvidet_null_rom[0]
+    v = utvidet_null_rom[0]
     løsning = -v[: -1] / v[-1]
-    
-    # if not np.allclose(koeffisientmatrise @ løsning[None, :], høyreside):
-    #     print("Det finnes ingen løsning til det lineære ligningssystemet")
     return løsning
 
 def finn_egenvektorer_og_egenverdier(A, epsilon=1e-12):
