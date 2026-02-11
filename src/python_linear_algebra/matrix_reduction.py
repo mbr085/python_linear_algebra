@@ -101,6 +101,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
         for rad_idx, col_idx in zip(*pivot_posisjoner(matrise[1:])):
             rad = matrise[1 + rad_idx]
             matrise[0] -= (matrise[0, col_idx] / rad[col_idx]) * rad 
+        matrise[0] = matrise[0] / matrise[0, np.flatnonzero(matrise[0])[0]]
     else:
         for rad_idx, col_idx in zip(*pivot_posisjoner(matrise[1:])):
             rad = matrise[1 + rad_idx]
@@ -115,7 +116,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
     pivot_rader = pivot_posisjoner(matrise)[0]
     matrise[mask] = matrise[pivot_rader]
 
-    if not np.all(matrise[pivot_posisjoner(matrise)] == 1):
+    if not np.allclose(matrise[pivot_posisjoner(matrise)], 1):
         warnings.warn("Den heltallige matrisen er ikke fullstendig redusert.", UserWarning)
 
     return matrise
