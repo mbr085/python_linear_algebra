@@ -115,6 +115,9 @@ def gauss_jordan(matrise, epsilon=1e-8):
     pivot_rader = pivot_posisjoner(matrise)[0]
     matrise[mask] = matrise[pivot_rader]
 
+    if not np.all(matrise[pivot_posisjoner(matrise)] == 1):
+        warnings.warn("Den heltallige matrisen er ikke fullstendig redusert.", UserWarning)
+
     return matrise
 
 
@@ -135,15 +138,6 @@ def pivot_posisjoner(matrise):
                 pivot_rader.append(rader[0])
     return pivot_rader, pivot_kolonner
 
-# def frie_parametre(matrise):
-#     """
-#     Finner bundne og frie parametere i en rekkeredusert matrise.
-#     """
-#     return np.flatnonzero(np.sum(matrise != 0, axis=0) != 1)
-#     # _, pivot_kolonner = pivot_posisjoner(matrise)
-#     # alle_kolonner = set(range(matrise.shape[1]))
-#     # return sorted(alle_kolonner.difference(pivot_kolonner))
-
 def null_rom(matrise, epsilon=1e-8,):
     """
     Finner en basis for nullrommet til en matrise.
@@ -153,7 +147,6 @@ def null_rom(matrise, epsilon=1e-8,):
     redusert_matrise = gauss_jordan(matrise, epsilon=epsilon)
     pivot_rader, pivot_kolonner = pivot_posisjoner(redusert_matrise)
     frie = np.setdiff1d(np.arange(redusert_matrise.shape[1]), pivot_kolonner)
-    # frie = frie_parametre(redusert_matrise)
     
     for fri in frie:
         vektor = np.zeros((matrise.shape[1], 1), dtype=matrise.dtype)
