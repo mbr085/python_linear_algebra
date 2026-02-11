@@ -177,6 +177,7 @@ def partikulaer_losning(koeffisientmatrise, høyreside=None, epsilon=1e-8):
     utvidet_null_rom = [v for v in utvidet_null_rom if np.abs(v[-1]) > epsilon]
     if len(utvidet_null_rom) == 0:
         warnings.warn("Det finnes ingen løsning til det lineære ligningssystemet", UserWarning)
+        return np.zeros((koeffisientmatrise.shape[1], 1), dtype=koeffisientmatrise.dtype)
     v = utvidet_null_rom[0]
     løsning = -v[: -1] / v[-1]
     return løsning
