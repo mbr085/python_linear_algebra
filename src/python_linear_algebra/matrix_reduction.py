@@ -25,8 +25,14 @@ def normer_største_element(vektor):
 
 def gauss_jordan(matrise, epsilon=1e-8):
     matrise = generalisert_gauss_jordan(matrise, epsilon)
-    for rad, col in zip(*pivot_posisjoner(matrise)):
-        matrise[rad] = matrise[rad] / matrise[rad, col]
+
+
+    is np.issubtype(matrise.dtype, np.integer):
+        for rad, col in zip(*pivot_posisjoner(matrise)):
+            matrise[rad] = matrise[rad] / np.gcd.reduce(matrise[rad])
+    else:
+        for rad, col in zip(*pivot_posisjoner(matrise)):
+            matrise[rad] = matrise[rad] / matrise[rad, col]
 
     if not np.allclose(matrise[pivot_posisjoner(matrise)], 1):
         warnings.warn("Den heltallige matrisen er ikke fullstendig redusert.", UserWarning)
