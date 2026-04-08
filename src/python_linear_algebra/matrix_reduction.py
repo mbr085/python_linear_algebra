@@ -27,7 +27,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
     matrise = generalisert_gauss_jordan(matrise, epsilon)
 
 
-    is np.issubtype(matrise.dtype, np.integer):
+    if np.issubtype(matrise.dtype, np.integer):
         for rad, col in zip(*pivot_posisjoner(matrise)):
             matrise[rad] = matrise[rad] / np.gcd.reduce(matrise[rad])
     else:
