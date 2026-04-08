@@ -24,6 +24,16 @@ def normer_største_element(vektor):
     return vektor / største_ikke_null_element
 
 def gauss_jordan(matrise, epsilon=1e-8):
+    matrise = generalisert_gauss_jordan(matrise, epsilon)
+    for rad, col in pivot_posisjoner(matrise):
+        matrise[rad] = matrise[rad] / matrise[rad, col]
+
+    if not np.allclose(matrise[pivot_posisjoner(matrise)], 1):
+        warnings.warn("Den heltallige matrisen er ikke fullstendig redusert.", UserWarning)
+
+    return matrise
+
+def generalisert_gauss_jordan(matrise, epsilon=1e-8):
     """
     Utfører Gauss-Jordan eliminasjon på en gitt matrise.
     
@@ -93,7 +103,7 @@ def gauss_jordan(matrise, epsilon=1e-8):
 
     resterende_kolonner = np.concatenate((np.arange(0, forste_ikke_null_kolonne_index), np.arange(forste_ikke_null_kolonne_index + 1, matrise.shape[1])))
 
-    matrise[1:, resterende_kolonner] = gauss_jordan(matrise[1:, resterende_kolonner], epsilon=epsilon)
+    matrise[1:, resterende_kolonner] = generalisert_gauss_jordan(matrise[1:, resterende_kolonner], epsilon=epsilon)
     
     # Gjør den første raden null over pivot-posisjonene til de øvrige radene.
     matrise_pivot_posisjoner = pivot_posisjoner(matrise[1:])
@@ -115,9 +125,6 @@ def gauss_jordan(matrise, epsilon=1e-8):
     mask = np.any(matrise != 0, axis=1)
     pivot_rader = pivot_posisjoner(matrise)[0]
     matrise[mask] = matrise[pivot_rader]
-
-    if not np.allclose(matrise[pivot_posisjoner(matrise)], 1):
-        warnings.warn("Den heltallige matrisen er ikke fullstendig redusert.", UserWarning)
 
     return matrise
 
